@@ -4,7 +4,7 @@ import { Activity, Sparkles, FileText, Download, CheckCircle2, TrendingUp, BarCh
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line } from 'recharts';
 
 export const ReportsAnalytics: React.FC = () => {
-  const { selectedTempleId, temples } = useSimulation();
+  const { selectedTempleId, temples, theme } = useSimulation();
   const [reportGenerated, setReportGenerated] = useState<boolean>(false);
 
   const currentTemple = temples.find(t => t.id === selectedTempleId) || temples[0];
@@ -88,11 +88,16 @@ export const ReportsAnalytics: React.FC = () => {
           <div className="w-full h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={hourlyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="hour" stroke="#94A3B8" fontSize={11} />
-                <YAxis stroke="#94A3B8" fontSize={11} />
-                <Tooltip contentStyle={{ backgroundColor: '#0F172A', borderColor: '#F59E0B', borderRadius: '12px' }} />
-                <Bar dataKey="visitors" fill="#F59E0B" radius={[6, 6, 0, 0]} />
+                <CartesianGrid strokeDasharray="3 3" stroke={theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'} />
+                <XAxis dataKey="hour" stroke={theme === 'light' ? '#475569' : '#94A3B8'} fontSize={11} />
+                <YAxis stroke={theme === 'light' ? '#475569' : '#94A3B8'} fontSize={11} />
+                <Tooltip contentStyle={{
+                  backgroundColor: theme === 'light' ? '#ffffff' : '#0f172a',
+                  borderColor: theme === 'light' ? '#d97706' : '#f59e0b',
+                  color: theme === 'light' ? '#0f172a' : '#f8fafc',
+                  borderRadius: '12px'
+                }} />
+                <Bar dataKey="visitors" fill={theme === 'light' ? '#d97706' : '#F59E0B'} radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -104,11 +109,16 @@ export const ReportsAnalytics: React.FC = () => {
           <div className="w-full h-72">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={hourlyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="hour" stroke="#94A3B8" fontSize={11} />
-                <YAxis stroke="#94A3B8" fontSize={11} />
-                <Tooltip contentStyle={{ backgroundColor: '#0F172A', borderColor: '#06B6D4', borderRadius: '12px' }} />
-                <Line type="monotone" dataKey="waitMin" stroke="#06B6D4" strokeWidth={3} dot={{ fill: '#06B6D4' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'} />
+                <XAxis dataKey="hour" stroke={theme === 'light' ? '#475569' : '#94A3B8'} fontSize={11} />
+                <YAxis stroke={theme === 'light' ? '#475569' : '#94A3B8'} fontSize={11} />
+                <Tooltip contentStyle={{
+                  backgroundColor: theme === 'light' ? '#ffffff' : '#0f172a',
+                  borderColor: theme === 'light' ? '#0284c7' : '#06B6D4',
+                  color: theme === 'light' ? '#0f172a' : '#f8fafc',
+                  borderRadius: '12px'
+                }} />
+                <Line type="monotone" dataKey="waitMin" stroke={theme === 'light' ? '#0284c7' : '#06B6D4'} strokeWidth={3} dot={{ fill: theme === 'light' ? '#0284c7' : '#06B6D4' }} />
               </LineChart>
             </ResponsiveContainer>
           </div>

@@ -5,7 +5,7 @@ import { Activity, Sparkles, AlertTriangle, TrendingUp, Calendar, Sun, Users, Sh
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 
 export const AICrowdPrediction: React.FC = () => {
-  const { selectedTempleId, temples } = useSimulation();
+  const { selectedTempleId, temples, theme } = useSimulation();
 
   const currentTemple = temples.find(t => t.id === selectedTempleId) || temples[0];
 
@@ -83,12 +83,19 @@ export const AICrowdPrediction: React.FC = () => {
                   <stop offset="95%" stopColor="#F59E0B" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="timeLabel" stroke="#94A3B8" fontSize={11} />
-              <YAxis stroke="#94A3B8" fontSize={11} />
+              <CartesianGrid strokeDasharray="3 3" stroke={theme === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'} />
+              <XAxis dataKey="timeLabel" stroke={theme === 'light' ? '#475569' : '#94A3B8'} fontSize={11} />
+              <YAxis stroke={theme === 'light' ? '#475569' : '#94A3B8'} fontSize={11} />
               <Tooltip
-                contentStyle={{ backgroundColor: '#0F172A', borderColor: '#F59E0B', borderRadius: '12px', fontSize: '12px' }}
-                itemStyle={{ color: '#F8FAFC' }}
+                contentStyle={{
+                  backgroundColor: theme === 'light' ? '#ffffff' : '#0f172a',
+                  borderColor: theme === 'light' ? '#d97706' : '#f59e0b',
+                  color: theme === 'light' ? '#0f172a' : '#f8fafc',
+                  borderRadius: '12px',
+                  fontSize: '12px',
+                  boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)'
+                }}
+                itemStyle={{ color: theme === 'light' ? '#0f172a' : '#f8fafc' }}
               />
               <Area type="monotone" dataKey="currentCrowd" name="Current Count" stroke="#06B6D4" fillOpacity={1} fill="url(#colorCurrent)" />
               <Area type="monotone" dataKey="predictedCrowd" name="Predicted Peak" stroke="#F59E0B" fillOpacity={1} fill="url(#colorPredicted)" />

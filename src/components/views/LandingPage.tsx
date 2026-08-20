@@ -1,7 +1,37 @@
 import React from 'react';
 import { useSimulation } from '../../context/SimulationContext';
-import { Shield, Eye, Activity, Siren, Navigation, Calendar, Cpu, ArrowRight, CheckCircle2, Zap, AlertTriangle, Users, Compass, Award, Sparkles } from 'lucide-react';
-import { Temple3DViewer } from '../common/Temple3DViewer';
+import { Shield, Eye, Activity, Siren, Navigation, Calendar, Cpu, ArrowRight, CheckCircle2, Zap, AlertTriangle, Users, Compass, Award, Sparkles, Globe, MapPin, ExternalLink, Layers } from 'lucide-react';
+
+const SHOWCASE_GPS_COORDS = {
+  somnath: {
+    name: 'Somnath Mahadev Temple',
+    lat: 20.8880,
+    lng: 70.4012,
+    address: 'Somnath Mandir, Prabhas Patan, Veraval, Gujarat 362268',
+    mapZoom: 17
+  },
+  dwarka: {
+    name: 'Dwarkadhish Temple',
+    lat: 22.2378,
+    lng: 68.9678,
+    address: 'Dwarkadhish Temple, Dwarka, Gujarat 361335',
+    mapZoom: 17
+  },
+  ambaji: {
+    name: 'Ambaji Shakti Peeth',
+    lat: 24.3297,
+    lng: 72.8467,
+    address: 'Ambaji Temple, Banaskantha, Gujarat 385110',
+    mapZoom: 17
+  },
+  pavagadh: {
+    name: 'Kalika Mata Temple',
+    lat: 22.4833,
+    lng: 73.5167,
+    address: 'Kalika Mata Temple, Pavagadh Hill, Gujarat 389360',
+    mapZoom: 16
+  }
+};
 
 interface AnimatedStatProps {
   end: number;
@@ -52,6 +82,10 @@ const CountUpStat: React.FC<AnimatedStatProps> = ({
 
 export const LandingPage: React.FC = () => {
   const { setCurrentView, temples, triggerCrowdSurge, isSimulationActive, t } = useSimulation();
+  const [landingTempleId, setLandingTempleId] = React.useState<'somnath' | 'dwarka' | 'ambaji' | 'pavagadh'>('somnath');
+  const [landingGoogleLayer, setLandingGoogleLayer] = React.useState<'h' | 'k' | 'm'>('h');
+
+  const currentGps = SHOWCASE_GPS_COORDS[landingTempleId];
 
   return (
     <div className="space-y-20 pb-16">
@@ -129,21 +163,99 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          {/* 3D LIVE DIGITAL TWIN INTERACTIVE SHOWCASE */}
+          {/* REAL-WORLD GOOGLE MAPS GIS SATELLITE SHOWCASE */}
           <div className="mt-16 max-w-5xl mx-auto space-y-4 text-center">
             <div>
-              <span className="px-3 py-1 text-[11px] font-bold rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 uppercase tracking-widest">
-                Interactive WebGL 3D Simulation
+              <span className="px-3 py-1 text-[11px] font-bold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 uppercase tracking-widest inline-flex items-center gap-1.5 justify-center">
+                <Globe className="w-3.5 h-3.5 text-emerald-400" /> Real-World Google Maps GIS
               </span>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-white mt-2">
-                Real-Time <span className="text-saffron-gradient">3D Live Temple Model</span>
+                Real-Time <span className="text-saffron-gradient">Google Maps Satellite GIS</span>
               </h2>
               <p className="text-xs sm:text-sm text-slate-300 max-w-2xl mx-auto mt-1">
-                Explore temple architecture, live crowd density heatmaps, 360° orbit viewpoints, and Aarti night lighting modes.
+                Explore live high-resolution satellite imagery, real GPS coordinates, 3D terrain contours, and live crowd telemetry feeds.
               </p>
             </div>
 
-            <Temple3DViewer heightClass="h-[520px]" />
+            {/* Embedded Google Maps Container with Controls */}
+            <div className="glass-panel p-3 rounded-3xl border border-amber-500/30 shadow-2xl relative overflow-hidden text-left space-y-3">
+              
+              {/* Map Toolbar */}
+              <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-950/80 p-3 rounded-2xl border border-slate-800">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-amber-400 animate-bounce" />
+                  <span className="text-xs font-bold text-white">{currentGps.name}</span>
+                  <span className="text-[10px] text-slate-400 hidden sm:inline">GPS: {currentGps.lat}° N, {currentGps.lng}° E</span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Temple Switcher */}
+                  <select
+                    value={landingTempleId}
+                    onChange={(e) => setLandingTempleId(e.target.value as any)}
+                    className="bg-slate-900 border border-amber-500/30 text-amber-300 text-xs font-bold px-2.5 py-1 rounded-xl focus:outline-none"
+                  >
+                    <option value="somnath">Somnath Mahadev</option>
+                    <option value="dwarka">Dwarkadhish Temple</option>
+                    <option value="ambaji">Ambaji Shakti Peeth</option>
+                    <option value="pavagadh">Kalika Mata Pavagadh</option>
+                  </select>
+
+                  {/* Layer Buttons */}
+                  <div className="flex items-center bg-slate-900 p-0.5 rounded-xl border border-slate-800 text-[11px] font-bold">
+                    <button
+                      onClick={() => setLandingGoogleLayer('h')}
+                      className={`px-2 py-1 rounded-lg transition-all ${landingGoogleLayer === 'h' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white'}`}
+                    >
+                      🛰️ Hybrid
+                    </button>
+                    <button
+                      onClick={() => setLandingGoogleLayer('k')}
+                      className={`px-2 py-1 rounded-lg transition-all ${landingGoogleLayer === 'k' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white'}`}
+                    >
+                      ⛰️ 3D Satellite
+                    </button>
+                    <button
+                      onClick={() => setLandingGoogleLayer('m')}
+                      className={`px-2 py-1 rounded-lg transition-all ${landingGoogleLayer === 'm' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white'}`}
+                    >
+                      🚗 Roads
+                    </button>
+                  </div>
+
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${currentGps.lat},${currentGps.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-xs font-bold hover:bg-cyan-500/30 transition-all flex items-center gap-1"
+                  >
+                    Directions <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              </div>
+
+              {/* iFrame View */}
+              <div className="relative rounded-2xl overflow-hidden min-h-[460px]">
+                <iframe
+                  title={`Google Map - ${currentGps.name}`}
+                  width="100%"
+                  height="460"
+                  className="rounded-2xl border-0 shadow-inner"
+                  src={`https://maps.google.com/maps?q=${currentGps.lat},${currentGps.lng}&t=${landingGoogleLayer}&z=${currentGps.mapZoom}&ie=UTF8&iwloc=&output=embed`}
+                  allowFullScreen
+                  loading="lazy"
+                />
+
+                <div className="absolute bottom-4 left-4 z-10 px-3 py-1.5 rounded-xl bg-slate-950/85 border border-amber-500/40 backdrop-blur-xl shadow-xl flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                  <span className="text-xs font-bold text-white">
+                    Live GIS Stream: <span className="text-amber-400">{currentGps.address}</span>
+                  </span>
+                </div>
+              </div>
+
+            </div>
+
           </div>
 
           {/* Animated AI Pipeline Graphic: CCTV -> AI Engine -> Crowd Analysis -> Prediction -> Smart Alerts -> Pilgrim */}

@@ -20,12 +20,12 @@ interface ZoneTelemetry3D {
 
 export const Temple3DViewer: React.FC<{ heightClass?: string }> = ({ heightClass = "h-[580px]" }) => {
   const mountRef = useRef<HTMLDivElement>(null);
-  const { selectedTempleId, temples, zones, t } = useSimulation();
+  const { selectedTempleId, temples, zones, t, theme } = useSimulation();
   
   const currentTemple = temples.find(t => t.id === selectedTempleId) || temples[0];
 
   const [lightingMode, setLightingMode] = useState<'day' | 'night'>('day');
-  const [activeViewpoint, setActiveViewpoint] = useState<'aerial' | 'sanctum' | 'entrance' | 'cctv'>('sanctum');
+  const [activeViewpoint, setActiveViewpoint] = useState<'aerial' | 'sanctum' | 'entrance' | 'ocean' | 'cctv'>('sanctum');
   const [selectedZone, setSelectedZone] = useState<ZoneTelemetry3D | null>(null);
   const [isAutoRotate, setIsAutoRotate] = useState<boolean>(true);
 
@@ -93,28 +93,36 @@ export const Temple3DViewer: React.FC<{ heightClass?: string }> = ({ heightClass
     const width = mountRef.current.clientWidth;
     const height = mountRef.current.clientHeight;
 
-    // 1. Scene & Environment Setup based on Temple Location
+    // 1. Scene & Environment Setup based on Temple Location & Active Theme
     const scene = new THREE.Scene();
     
-    let skyBgColor = '#0b1329';
-    let fogColor = '#0b1329';
+    let skyBgColor = '#38bdf8';
+    let fogColor = '#7dd3fc';
 
-    if (selectedTempleId === 'pavagadh') {
-      skyBgColor = lightingMode === 'day' ? '#1e293b' : '#020617';
+    if (lightingMode === 'night') {
+      skyBgColor = '#030712';
+      fogColor = '#030712';
+    } else if (theme === 'light') {
+      skyBgColor = selectedTempleId === 'somnath' ? '#38bdf8' : '#e2e8f0';
       fogColor = skyBgColor;
-    } else if (selectedTempleId === 'dwarka') {
-      skyBgColor = lightingMode === 'day' ? '#0f172a' : '#030712';
-      fogColor = skyBgColor;
-    } else if (selectedTempleId === 'ambaji') {
-      skyBgColor = lightingMode === 'day' ? '#0f172a' : '#020617';
-      fogColor = skyBgColor;
-    } else { // Somnath
-      skyBgColor = lightingMode === 'day' ? '#0b1329' : '#030712';
-      fogColor = skyBgColor;
+    } else {
+      if (selectedTempleId === 'pavagadh') {
+        skyBgColor = '#1e293b';
+        fogColor = skyBgColor;
+      } else if (selectedTempleId === 'dwarka') {
+        skyBgColor = '#0f172a';
+        fogColor = skyBgColor;
+      } else if (selectedTempleId === 'ambaji') {
+        skyBgColor = '#0f172a';
+        fogColor = skyBgColor;
+      } else { // Somnath
+        skyBgColor = '#38bdf8'; // Radiant realistic sky blue matching reference photo!
+        fogColor = '#7dd3fc';
+      }
     }
 
     scene.background = new THREE.Color(skyBgColor);
-    scene.fog = new THREE.FogExp2(fogColor, selectedTempleId === 'pavagadh' ? 0.02 : 0.015);
+    scene.fog = new THREE.FogExp2(fogColor, selectedTempleId === 'somnath' ? 0.006 : 0.015);
 
     // 2. Camera Setup
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
@@ -127,24 +135,32 @@ export const Temple3DViewer: React.FC<{ heightClass?: string }> = ({ heightClass
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.25;
+    renderer.toneMappingExposure = theme === 'light' ? 1.4 : 1.3;
 
     // Clear previous canvas
     mountRef.current.innerHTML = '';
     mountRef.current.appendChild(renderer.domElement);
 
-    // 4. Lighting Setup
+    // 4. Lighting Setup (Outdoor Hemisphere + Golden Sunlight)
     const ambientLight = new THREE.AmbientLight(
-      lightingMode === 'day' ? 0xfff5ea : 0x1e293b,
-      lightingMode === 'day' ? 1.4 : 0.4
+      lightingMode === 'day' ? 0xfffbeb : 0x1e293b,
+      lightingMode === 'day' ? 1.5 : 0.4
     );
     scene.add(ambientLight);
 
+    // Outdoor Sky & Grass Bounce Hemisphere Light
+    const hemiLight = new THREE.HemisphereLight(
+      0x38bdf8,
+      0x16a34a,
+      lightingMode === 'day' ? 1.2 : 0.2
+    );
+    scene.add(hemiLight);
+
     const sunLight = new THREE.DirectionalLight(
       lightingMode === 'day' ? 0xfff7ed : 0x38bdf8,
-      lightingMode === 'day' ? 2.3 : 0.5
+      lightingMode === 'day' ? 2.8 : 0.5
     );
-    sunLight.position.set(25, 45, 25);
+    sunLight.position.set(30, 48, 25);
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.width = 2048;
     sunLight.shadow.mapSize.height = 2048;
@@ -323,64 +339,260 @@ export const Temple3DViewer: React.FC<{ heightClass?: string }> = ({ heightClass
 
     } else {
       // ==========================================
-      // 🌊 SOMNATH MAHADEV (SOLANKI KAILASH MAHAMERU & SEA WALL)
+      // 🌊 SOMNATH MAHADEV (REALISTIC KAILASH MAHAMERU ARCHITECTURE & LUSH GARDENS)
       // ==========================================
 
-      const stoneMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.6, metalness: 0.1 });
-      const darkStoneMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.7 });
-      const goldMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.9, roughness: 0.2 });
-      const oceanMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.2, transparent: true, opacity: 0.85 });
+      const stoneMat = new THREE.MeshStandardMaterial({ color: 0xdf9433, roughness: 0.45, metalness: 0.08 });
+      const lightStoneMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, roughness: 0.4, metalness: 0.05 });
+      const darkStoneMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.6 });
+      const goldMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.95, roughness: 0.15, emissive: 0xb45309, emissiveIntensity: 0.3 });
+      const oceanMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.15, transparent: true, opacity: 0.88 });
+      const foamMat = new THREE.MeshBasicMaterial({ color: 0xf0f9ff, transparent: true, opacity: 0.7 });
+      const hedgeMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.75 });
+      const grassMat = new THREE.MeshStandardMaterial({ color: 0x16a34a, roughness: 0.8 });
+      const tileMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.3 });
+      const rockMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.95 });
 
-      // Plinth
-      const plinth = new THREE.Mesh(new THREE.BoxGeometry(32, 1.2, 38), darkStoneMat);
-      plinth.position.y = 0.6;
-      templeGroup.add(plinth);
+      // 1. Jagati Base Platform (Tiered Sandstone Plinth)
+      const plinthBase = new THREE.Mesh(new THREE.BoxGeometry(38, 1.4, 46), darkStoneMat);
+      plinthBase.position.y = 0.7;
+      plinthBase.receiveShadow = true;
+      plinthBase.castShadow = true;
+      templeGroup.add(plinthBase);
 
-      // Solanki Kailash Mahameru Shikhara (150ft Spire)
-      const sanctum = new THREE.Mesh(new THREE.BoxGeometry(10, 6, 10), stoneMat);
-      sanctum.position.set(0, 4.8, -4);
-      templeGroup.add(sanctum);
+      const plinthUpper = new THREE.Mesh(new THREE.BoxGeometry(34, 1.2, 42), stoneMat);
+      plinthUpper.position.y = 2.0;
+      plinthUpper.receiveShadow = true;
+      plinthUpper.castShadow = true;
+      templeGroup.add(plinthUpper);
 
-      for (let i = 0; i < 7; i++) {
-        const scale = 1 - (i * 0.12);
-        const tier = new THREE.Mesh(new THREE.BoxGeometry(9.5 * scale, 1.4, 9.5 * scale), i % 2 === 0 ? stoneMat : darkStoneMat);
-        tier.position.set(0, 7.8 + (i * 1.3), -4);
-        templeGroup.add(tier);
+      // Grand Entrance Staircase
+      for (let i = 0; i < 5; i++) {
+        const step = new THREE.Mesh(new THREE.BoxGeometry(11 - i * 0.4, 0.4, 1.2), lightStoneMat);
+        step.position.set(0, 0.2 + i * 0.4, 21.5 + i * 0.9);
+        templeGroup.add(step);
       }
 
-      // Kalash & Waving Flag (Dhwaja)
-      const kalash = new THREE.Mesh(new THREE.ConeGeometry(1.2, 2.2, 12), goldMat);
-      kalash.position.set(0, 18.7, -4);
-      templeGroup.add(kalash);
+      // 2. Garbhagriha Sanctum Base (Main Inner Shrine Chamber)
+      const sanctumBase = new THREE.Mesh(new THREE.BoxGeometry(13, 7, 13), stoneMat);
+      sanctumBase.position.set(0, 6.1, -6);
+      sanctumBase.castShadow = true;
+      sanctumBase.receiveShadow = true;
+      templeGroup.add(sanctumBase);
 
-      const flagStaff = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 3.5), goldMat);
-      flagStaff.position.set(0, 20.5, -4);
+      // 3. Solanki Kailash Mahameru Shikhara (150ft Multi-Tiered Curving Spire)
+      for (let i = 0; i < 14; i++) {
+        const scale = Math.pow(1 - (i * 0.068), 1.25);
+        const height = 1.35;
+        const width = 12.5 * scale;
+
+        const tier = new THREE.Mesh(
+          new THREE.BoxGeometry(width, height, width),
+          i % 2 === 0 ? stoneMat : darkStoneMat
+        );
+        tier.position.set(0, 9.6 + (i * 1.3), -6);
+        tier.castShadow = true;
+        tier.receiveShadow = true;
+        templeGroup.add(tier);
+
+        // Add Urushringa Miniature Turrets on 4 Corners of Lower Spire Tiers
+        if (i > 1 && i < 8) {
+          const turretSize = width * 0.26;
+          const offsets = [
+            [-width * 0.42, -width * 0.42],
+            [width * 0.42, -width * 0.42],
+            [-width * 0.42, width * 0.42],
+            [width * 0.42, width * 0.42],
+          ];
+          offsets.forEach(([offX, offZ]) => {
+            const turret = new THREE.Mesh(new THREE.ConeGeometry(turretSize * 0.85, 2.0, 4), lightStoneMat);
+            turret.position.set(offX, 9.6 + (i * 1.3), -6 + offZ);
+            turret.rotation.y = Math.PI / 4;
+            templeGroup.add(turret);
+          });
+        }
+      }
+
+      // Amalaka (Circular Ribbed Stone Crown)
+      const amalaka = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 3.0, 1.3, 16), lightStoneMat);
+      amalaka.position.set(0, 27.8, -6);
+      templeGroup.add(amalaka);
+
+      // Kalash Finial (Golden Sacred Urn)
+      const kalashBase = new THREE.Mesh(new THREE.SphereGeometry(1.3, 16, 16), goldMat);
+      kalashBase.position.set(0, 29.3, -6);
+      templeGroup.add(kalashBase);
+
+      const kalashCone = new THREE.Mesh(new THREE.ConeGeometry(0.9, 2.4, 12), goldMat);
+      kalashCone.position.set(0, 31.0, -6);
+      templeGroup.add(kalashCone);
+
+      // Saffron Dhvajastambha & Waving Flag (Dhwaja)
+      const flagStaff = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 4.8), goldMat);
+      flagStaff.position.set(0, 33.6, -6);
       templeGroup.add(flagStaff);
 
-      const flagGeo = new THREE.PlaneGeometry(2.2, 1.2, 8, 4);
-      const flagMesh = new THREE.Mesh(flagGeo, new THREE.MeshStandardMaterial({ color: 0xf97316, side: THREE.DoubleSide }));
-      flagMesh.position.set(1.1, 21.4, -4);
+      const flagGeo = new THREE.PlaneGeometry(3.5, 1.8, 10, 4);
+      const flagMat = new THREE.MeshStandardMaterial({ color: 0xea580c, side: THREE.DoubleSide, roughness: 0.3 });
+      const flagMesh = new THREE.Mesh(flagGeo, flagMat);
+      flagMesh.position.set(1.75, 34.8, -6);
       templeGroup.add(flagMesh);
       flagMeshRef = flagMesh;
 
-      // Baan Stambha (Arrow Pillar facing Ocean South Pole)
-      const arrowPillar = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 7), goldMat);
-      arrowPillar.position.set(14, 4.5, -10);
-      templeGroup.add(arrowPillar);
+      // 4. Twin Gudhamandapa & Sabha Mandapa Domes (Stepped Pyramid Roofs)
+      const gudhaMandapa = new THREE.Mesh(new THREE.BoxGeometry(15, 7.0, 15), stoneMat);
+      gudhaMandapa.position.set(0, 6.1, 6);
+      gudhaMandapa.castShadow = true;
+      gudhaMandapa.receiveShadow = true;
+      templeGroup.add(gudhaMandapa);
 
-      // Coastal Arabian Ocean Water Plane
-      const ocean = new THREE.Mesh(new THREE.PlaneGeometry(160, 40), oceanMat);
+      // Main Mandapa Stepped Pyramid Roof (Samvarana Structure Matching Reference Image)
+      for (let i = 0; i < 7; i++) {
+        const scale = 1 - (i * 0.13);
+        const domeTier = new THREE.Mesh(
+          new THREE.CylinderGeometry(7.2 * scale, 7.8 * scale, 1.15, 8),
+          i % 2 === 0 ? lightStoneMat : stoneMat
+        );
+        domeTier.position.set(0, 10.1 + (i * 1.1), 6);
+        domeTier.castShadow = true;
+        templeGroup.add(domeTier);
+      }
+
+      const mandapaKalash = new THREE.Mesh(new THREE.ConeGeometry(1.0, 2.0, 10), goldMat);
+      mandapaKalash.position.set(0, 17.8, 6);
+      templeGroup.add(mandapaKalash);
+
+      // Front Sabha Mandapa Octagonal Roof Dome (Second Dome matching Reference Photo!)
+      for (let i = 0; i < 6; i++) {
+        const scale = 1 - (i * 0.14);
+        const frontDome = new THREE.Mesh(
+          new THREE.CylinderGeometry(5.2 * scale, 5.8 * scale, 1.0, 8),
+          i % 2 === 0 ? lightStoneMat : stoneMat
+        );
+        frontDome.position.set(0, 9.2 + (i * 0.95), 16);
+        frontDome.castShadow = true;
+        templeGroup.add(frontDome);
+      }
+
+      // 5. Entrance Porch (Pillared Torana Portal & Balconies)
+      const porchRoof = new THREE.Mesh(new THREE.BoxGeometry(11, 2.6, 7), stoneMat);
+      porchRoof.position.set(0, 6.2, 17.5);
+      templeGroup.add(porchRoof);
+
+      // Carved Torana Pillars
+      const colPositions = [-4.5, -2.0, 2.0, 4.5];
+      colPositions.forEach(x => {
+        const column = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.55, 5.0, 8), lightStoneMat);
+        column.position.set(x, 2.5, 19.5);
+        column.castShadow = true;
+        templeGroup.add(column);
+      });
+
+      // Triangular Pediment Roof
+      const pediment = new THREE.Mesh(new THREE.ConeGeometry(6.0, 2.8, 4), lightStoneMat);
+      pediment.position.set(0, 8.6, 17.5);
+      pediment.rotation.y = Math.PI / 4;
+      templeGroup.add(pediment);
+
+      // 6. Iconic Baan Stambha (Arrow Pillar facing South Pole)
+      const arrowPedestal = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 2.0, 2.4, 8), darkStoneMat);
+      arrowPedestal.position.set(16, 3.2, -8);
+      templeGroup.add(arrowPedestal);
+
+      const arrowColumn = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.5, 8.0, 12), goldMat);
+      arrowColumn.position.set(16, 8.4, -8);
+      arrowColumn.castShadow = true;
+      templeGroup.add(arrowColumn);
+
+      const arrowGlobe = new THREE.Mesh(new THREE.SphereGeometry(1.0, 12, 12), goldMat);
+      arrowGlobe.position.set(16, 12.8, -8);
+      templeGroup.add(arrowGlobe);
+
+      const arrowPointer = new THREE.Mesh(new THREE.ConeGeometry(0.45, 2.0, 8), goldMat);
+      arrowPointer.position.set(16, 12.8, -10.2);
+      arrowPointer.rotation.x = -Math.PI / 2;
+      templeGroup.add(arrowPointer);
+
+      // 7. MANICURED GREEN HEDGE LABYRINTHS & WHITE CHECKERED WALKWAY (MATCHING REFERENCE IMAGE!)
+      // Side Garden Hedge Rows (Left & Right Hedge Mazes)
+      for (let z = -10; z <= 25; z += 4) {
+        // Left Hedges
+        const hedgeL = new THREE.Mesh(new THREE.BoxGeometry(8, 2.2, 3), hedgeMat);
+        hedgeL.position.set(-24, 1.1, z);
+        hedgeL.castShadow = true;
+        templeGroup.add(hedgeL);
+
+        // Right Hedges
+        const hedgeR = new THREE.Mesh(new THREE.BoxGeometry(8, 2.2, 3), hedgeMat);
+        hedgeR.position.set(24, 1.1, z);
+        hedgeR.castShadow = true;
+        templeGroup.add(hedgeR);
+      }
+
+      // Front Checkered Hedge Mazes & White Tile Grid (Exact Match to Image!)
+      for (let x = -18; x <= 18; x += 9) {
+        for (let z = 28; z <= 44; z += 8) {
+          const hedgeFront = new THREE.Mesh(new THREE.BoxGeometry(7.5, 1.8, 6.5), hedgeMat);
+          hedgeFront.position.set(x, 0.9, z);
+          hedgeFront.castShadow = true;
+          templeGroup.add(hedgeFront);
+        }
+      }
+
+      // White Checkered Walkway Tiles Grid (Center Courtyard in Reference Image!)
+      const checkerGroup = new THREE.Group();
+      for (let row = 0; row < 5; row++) {
+        for (let col = -3; col <= 3; col++) {
+          if ((row + col) % 2 === 0) {
+            const tile = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.08, 2.2), tileMat);
+            tile.position.set(col * 2.4, 0.08, 30 + row * 2.4);
+            checkerGroup.add(tile);
+          }
+        }
+      }
+      templeGroup.add(checkerGroup);
+
+      // 8. Coastal Breakwater Boulders & Seawall Promenade (Left Edge in Reference Image!)
+      const seaWall = new THREE.Mesh(new THREE.BoxGeometry(160, 4.8, 4.5), darkStoneMat);
+      seaWall.position.set(0, 2.4, -22);
+      seaWall.castShadow = true;
+      seaWall.receiveShadow = true;
+      templeGroup.add(seaWall);
+
+      // Sea Wall Battlements
+      for (let x = -75; x <= 75; x += 6) {
+        const rampart = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.3, 2.2), stoneMat);
+        rampart.position.set(x, 5.45, -22);
+        templeGroup.add(rampart);
+      }
+
+      // Breakwater Coastal Boulders Stacked on Sea Border (Left Sea Edge in Reference Image!)
+      for (let i = 0; i < 24; i++) {
+        const size = 1.8 + Math.random() * 1.5;
+        const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(size, 1), rockMat);
+        rock.position.set(-50 + i * 4.2, 1.2 + Math.random() * 0.6, -23.5 - Math.random() * 3);
+        rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+        rock.castShadow = true;
+        templeGroup.add(rock);
+      }
+
+      // Breaking Ocean Foam & Turquoise Sea Surface
+      const waveFoam = new THREE.Mesh(new THREE.BoxGeometry(160, 0.35, 6), foamMat);
+      waveFoam.position.set(0, 0.18, -25);
+      templeGroup.add(waveFoam);
+
+      const ocean = new THREE.Mesh(new THREE.PlaneGeometry(160, 60), oceanMat);
       ocean.rotation.x = -Math.PI / 2;
-      ocean.position.set(0, 0.05, -30);
+      ocean.position.set(0, 0.05, -50);
       templeGroup.add(ocean);
       waterMeshRef = ocean;
     }
 
-    // Add surrounding ground plane
+    // Add surrounding ground plane (Lush Green Lawn Grass matching Reference Image!)
     const groundGeo = new THREE.PlaneGeometry(160, 160);
     const groundMat = new THREE.MeshStandardMaterial({
-      color: selectedTempleId === 'pavagadh' ? 0x334155 : selectedTempleId === 'dwarka' ? 0x451a03 : 0x1e293b,
-      roughness: 0.95
+      color: selectedTempleId === 'somnath' ? 0x16a34a : (selectedTempleId === 'pavagadh' ? 0x334155 : 0x451a03),
+      roughness: 0.85
     });
     const ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI / 2;
@@ -520,6 +732,58 @@ export const Temple3DViewer: React.FC<{ heightClass?: string }> = ({ heightClass
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
 
+    // Mouse Wheel Zoom In / Zoom Out
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      if (!threeState.current) return;
+      const zoomDelta = e.deltaY * 0.015;
+      const currentLen = threeState.current.cameraTargetPos.length();
+      const newLen = Math.max(10, Math.min(70, currentLen + zoomDelta));
+      threeState.current.cameraTargetPos.normalize().multiplyScalar(newLen);
+    };
+    domElement.addEventListener('wheel', handleWheel, { passive: false });
+
+    // Touch Drag & Pinch-to-Zoom Gestures for Mobile / Tablets
+    let touchStartDist = 0;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        isDragging = true;
+        previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      } else if (e.touches.length === 2) {
+        isDragging = false;
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        touchStartDist = Math.hypot(dx, dy);
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 1 && isDragging) {
+        const deltaX = e.touches[0].clientX - previousMousePosition.x;
+        const deltaY = e.touches[0].clientY - previousMousePosition.y;
+        rotationTarget.y += deltaX * 0.006;
+        rotationTarget.x += deltaY * 0.006;
+        rotationTarget.x = Math.max(0.1, Math.min(Math.PI / 2.2, rotationTarget.x));
+        previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      } else if (e.touches.length === 2 && threeState.current) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.hypot(dx, dy);
+        const deltaDist = touchStartDist - dist;
+        const currentLen = threeState.current.cameraTargetPos.length();
+        const newLen = Math.max(10, Math.min(70, currentLen + deltaDist * 0.08));
+        threeState.current.cameraTargetPos.normalize().multiplyScalar(newLen);
+        touchStartDist = dist;
+      }
+    };
+
+    const onTouchEnd = () => { isDragging = false; };
+
+    domElement.addEventListener('touchstart', onTouchStart, { passive: true });
+    domElement.addEventListener('touchmove', onTouchMove, { passive: true });
+    domElement.addEventListener('touchend', onTouchEnd, { passive: true });
+
     // Save references to threeState ref
     threeState.current = {
       scene,
@@ -616,12 +880,16 @@ export const Temple3DViewer: React.FC<{ heightClass?: string }> = ({ heightClass
       domElement.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
+      domElement.removeEventListener('wheel', handleWheel);
+      domElement.removeEventListener('touchstart', onTouchStart);
+      domElement.removeEventListener('touchmove', onTouchMove);
+      domElement.removeEventListener('touchend', onTouchEnd);
       renderer.dispose();
     };
-  }, [selectedTempleId, lightingMode, isAutoRotate]);
+  }, [selectedTempleId, lightingMode, isAutoRotate, theme]);
 
   // Handle Preset Viewpoint Camera Changes
-  const setViewpoint = (view: 'aerial' | 'sanctum' | 'entrance' | 'cctv') => {
+  const setViewpoint = (view: 'aerial' | 'sanctum' | 'entrance' | 'ocean' | 'cctv') => {
     setActiveViewpoint(view);
     if (!threeState.current) return;
 
@@ -634,10 +902,25 @@ export const Temple3DViewer: React.FC<{ heightClass?: string }> = ({ heightClass
     } else if (view === 'entrance') {
       threeState.current.cameraTargetPos.set(0, 6, 28);
       threeState.current.cameraLookAtTarget.set(0, 4, 12);
+    } else if (view === 'ocean') {
+      threeState.current.cameraTargetPos.set(18, 10, -18);
+      threeState.current.cameraLookAtTarget.set(15, 6, -8);
     } else if (view === 'cctv') {
       threeState.current.cameraTargetPos.set(22, 18, 22);
       threeState.current.cameraLookAtTarget.set(0, 4, 0);
     }
+  };
+
+  const zoomIn = () => {
+    if (!threeState.current) return;
+    const newLen = Math.max(10, threeState.current.cameraTargetPos.length() - 5);
+    threeState.current.cameraTargetPos.normalize().multiplyScalar(newLen);
+  };
+
+  const zoomOut = () => {
+    if (!threeState.current) return;
+    const newLen = Math.min(70, threeState.current.cameraTargetPos.length() + 5);
+    threeState.current.cameraTargetPos.normalize().multiplyScalar(newLen);
   };
 
   const getArchitectureLabel = (id: TempleId) => {
@@ -714,10 +997,40 @@ export const Temple3DViewer: React.FC<{ heightClass?: string }> = ({ heightClass
           >
             📹 CCTV Match
           </button>
+
+          <button
+            onClick={() => setViewpoint('ocean')}
+            className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all flex items-center gap-1 ${
+              activeViewpoint === 'ocean'
+                ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-md'
+                : 'text-slate-300 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            🌊 Ocean Wall
+          </button>
         </div>
 
-        {/* Environment & Orbit Toggles */}
+        {/* Environment, Zoom & Orbit Toggles */}
         <div className="flex items-center gap-1.5 pointer-events-auto">
+          {/* Zoom Buttons */}
+          <div className="flex items-center bg-slate-900/90 rounded-xl border border-amber-500/30 p-0.5">
+            <button
+              onClick={zoomIn}
+              className="px-2 py-1 text-xs font-black text-amber-300 hover:text-white hover:bg-slate-800 rounded-lg transition-all"
+              title="Zoom In (+)"
+            >
+              +
+            </button>
+            <span className="text-[10px] text-slate-500">|</span>
+            <button
+              onClick={zoomOut}
+              className="px-2 py-1 text-xs font-black text-amber-300 hover:text-white hover:bg-slate-800 rounded-lg transition-all"
+              title="Zoom Out (-)"
+            >
+              -
+            </button>
+          </div>
+
           <button
             onClick={() => setLightingMode(lightingMode === 'day' ? 'night' : 'day')}
             className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition-all shadow-xl flex items-center gap-1.5 ${

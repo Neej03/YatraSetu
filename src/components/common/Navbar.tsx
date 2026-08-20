@@ -90,7 +90,7 @@ export const Navbar: React.FC = () => {
                 className="bg-transparent text-xs font-semibold text-amber-300 focus:outline-none cursor-pointer max-w-[100px] sm:max-w-[120px] xl:max-w-[140px] truncate"
               >
                 {temples.map((t) => (
-                  <option key={t.id} value={t.id} className="bg-slate-900 text-white">
+                  <option key={t.id} value={t.id}>
                     {t.name}
                   </option>
                 ))}
@@ -181,11 +181,11 @@ export const Navbar: React.FC = () => {
                 onChange={(e) => setUserRole(e.target.value as UserRole)}
                 className="bg-transparent text-xs font-medium text-slate-200 focus:outline-none cursor-pointer max-w-[90px] xl:max-w-[110px] truncate"
               >
-                <option value="pilgrim" className="bg-slate-900">{t('common.pilgrim_mode')}</option>
-                <option value="authority" className="bg-slate-900">{t('common.authority_admin')}</option>
-                <option value="police" className="bg-slate-900">{t('common.police')}</option>
-                <option value="medical" className="bg-slate-900">{t('common.medical')}</option>
-                <option value="volunteer" className="bg-slate-900">{t('common.volunteer')}</option>
+                <option value="pilgrim">{t('common.pilgrim_mode')}</option>
+                <option value="authority">{t('common.authority_admin')}</option>
+                <option value="police">{t('common.police')}</option>
+                <option value="medical">{t('common.medical')}</option>
+                <option value="volunteer">{t('common.volunteer')}</option>
               </select>
             </div>
 
@@ -198,9 +198,9 @@ export const Navbar: React.FC = () => {
                 className="bg-transparent text-xs font-bold text-amber-300 focus:outline-none cursor-pointer max-w-[75px] sm:max-w-[95px] truncate"
                 title={t('common.select_language')}
               >
-                {languagesList.map((lang) => (
-                  <option key={lang.code} value={lang.code} className="bg-slate-900 text-white font-medium">
-                    {lang.flag} {lang.nativeName}
+                {languagesList.map((l) => (
+                  <option key={l.code} value={l.code}>
+                    {l.nativeName} ({l.name})
                   </option>
                 ))}
               </select>

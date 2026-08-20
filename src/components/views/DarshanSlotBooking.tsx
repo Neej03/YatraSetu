@@ -105,7 +105,7 @@ export const DarshanSlotBooking: React.FC = () => {
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500/50"
               >
                 {[1, 2, 3, 4, 5, 6, 8, 10].map(n => (
-                  <option key={n} value={n} className="bg-slate-900">{n} Devotees</option>
+                  <option key={n} value={n}>{n} Devotees</option>
                 ))}
               </select>
             </div>
