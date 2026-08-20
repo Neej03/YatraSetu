@@ -19,6 +19,20 @@
     overflow-x: hidden;
     margin: 0;
     padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Responsive Touch Scroll & Mobile iFrame Adjustments */
+  .touch-scroll-x {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  @media (max-width: 640px) {
+    iframe {
+      max-height: 420px !important;
+    }
   }
 
   /* Accessibility mode override */

@@ -4,7 +4,7 @@ import { TempleId, UserRole, LanguageCode } from '../../types';
 import { 
   Shield, Eye, AlertTriangle, Calendar, Navigation, Activity, 
   Compass, ChevronDown, Bell, UserCheck, Accessibility, HelpCircle, 
-  Layers, Sun, Moon, BarChart3, Lock, Info, Landmark, Globe 
+  Layers, Sun, Moon, BarChart3, Lock, Info, Landmark, Globe, Menu, X 
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
@@ -49,7 +49,6 @@ export const Navbar: React.FC = () => {
     { id: 'about', icon: Info },
   ];
 
-  // Top 3 primary nav tabs shown inline on desktop (xl: 1280px+)
   const primaryNavIds = ['landing', 'pilgrim', 'map'];
 
   const getNavLabel = (id: string) => {
@@ -59,8 +58,8 @@ export const Navbar: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 glass-panel border-b border-amber-500/20 bg-[#070913]/90 backdrop-blur-md w-full">
-      <div className="w-full max-w-[1920px] mx-auto px-2 sm:px-3 lg:px-4">
-        <div className="flex items-center justify-between h-16 gap-1.5 sm:gap-2">
+      <div className="w-full max-w-[1920px] mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="flex items-center justify-between h-16 gap-2">
           
           {/* LEFT: Logo & Temple Selector */}
           <div className="flex items-center gap-2 shrink-0">
@@ -75,14 +74,14 @@ export const Navbar: React.FC = () => {
                   <span className="font-extrabold text-base sm:text-lg tracking-tight text-white font-sans whitespace-nowrap">
                     Yatra<span className="text-saffron-gradient">Setu</span>
                   </span>
-                  <span className="px-1 py-0.5 text-[8px] sm:text-[9px] font-bold rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 tracking-wider uppercase whitespace-nowrap hidden lg:inline-block">
-                    AI CV v2.4
+                  <span className="px-1.5 py-0.5 text-[8px] sm:text-[9px] font-bold rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 tracking-wider uppercase whitespace-nowrap hidden lg:inline-block">
+                    AI GIS v4.2
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Temple Selector */}
+            {/* Temple Selector (Desktop & Tablet) */}
             <div className="hidden sm:flex items-center gap-1 bg-slate-900/80 px-2 py-1.5 rounded-lg border border-amber-500/20">
               <select
                 value={selectedTempleId}
@@ -99,8 +98,8 @@ export const Navbar: React.FC = () => {
             </div>
           </div>
 
-          {/* CENTER: Navigation Bar (Primary tabs + More dropdown) */}
-          <nav className="flex items-center gap-1 shrink-0">
+          {/* CENTER: Desktop Navigation Tabs */}
+          <nav className="hidden md:flex items-center gap-1 shrink-0">
             {primaryNavIds.map((id) => {
               const v = viewsList.find(item => item.id === id);
               if (!v) return null;
@@ -113,7 +112,7 @@ export const Navbar: React.FC = () => {
                 <button
                   key={v.id}
                   onClick={() => setCurrentView(v.id)}
-                  className={`hidden sm:flex items-center gap-1 px-2 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
+                  className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg transition-all whitespace-nowrap ${
                     isActive
                       ? 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
                       : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
@@ -125,11 +124,11 @@ export const Navbar: React.FC = () => {
               );
             })}
 
-            {/* "More Views" Dropdown */}
+            {/* "More Views" Dropdown (Desktop) */}
             <div className="relative">
               <button
                 onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
-                className={`flex items-center gap-1 px-2 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                className={`flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                   !primaryNavIds.includes(currentView)
                     ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
                     : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
@@ -170,11 +169,11 @@ export const Navbar: React.FC = () => {
             </div>
           </nav>
 
-          {/* RIGHT: Role, Language, Theme, Accessibility, Bell */}
+          {/* RIGHT: Controls & Mobile Hamburger Button */}
           <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             
-            {/* Role Switcher */}
-            <div className="hidden sm:flex items-center gap-1 bg-slate-900/90 px-1.5 py-1.5 rounded-lg border border-slate-800 shrink-0">
+            {/* Role Switcher (Desktop) */}
+            <div className="hidden md:flex items-center gap-1 bg-slate-900/90 px-1.5 py-1.5 rounded-lg border border-slate-800 shrink-0">
               <UserCheck className="w-3.5 h-3.5 text-orange-400 shrink-0" />
               <select
                 value={userRole}
@@ -195,12 +194,12 @@ export const Navbar: React.FC = () => {
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value as LanguageCode)}
-                className="bg-transparent text-xs font-bold text-amber-300 focus:outline-none cursor-pointer max-w-[75px] sm:max-w-[95px] truncate"
+                className="bg-transparent text-xs font-bold text-amber-300 focus:outline-none cursor-pointer max-w-[65px] sm:max-w-[95px] truncate"
                 title={t('common.select_language')}
               >
                 {languagesList.map((l) => (
                   <option key={l.code} value={l.code}>
-                    {l.nativeName} ({l.name})
+                    {l.nativeName}
                   </option>
                 ))}
               </select>
@@ -209,7 +208,7 @@ export const Navbar: React.FC = () => {
             {/* Theme Toggle Button */}
             <button
               onClick={toggleTheme}
-              title={`Switch to ${theme === 'dark' ? t('common.light_mode') : t('common.dark_mode')} Mode`}
+              title={`Switch Mode`}
               className={`flex items-center gap-1 px-2 py-1.5 rounded-lg border text-xs font-bold transition-all shadow-sm shrink-0 ${
                 theme === 'light'
                   ? 'bg-amber-500/10 text-amber-700 border-amber-500/40 hover:bg-amber-500/20'
@@ -217,15 +216,9 @@ export const Navbar: React.FC = () => {
               }`}
             >
               {theme === 'dark' ? (
-                <>
-                  <Sun className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="hidden 2xl:inline">{t('common.light_mode')}</span>
-                </>
+                <Sun className="w-3.5 h-3.5 text-amber-400" />
               ) : (
-                <>
-                  <Moon className="w-3.5 h-3.5 text-indigo-600" />
-                  <span className="hidden 2xl:inline text-indigo-950 font-bold">{t('common.dark_mode')}</span>
-                </>
+                <Moon className="w-3.5 h-3.5 text-indigo-600" />
               )}
             </button>
 
@@ -233,7 +226,7 @@ export const Navbar: React.FC = () => {
             <button
               onClick={toggleAccessibilityMode}
               title={t('common.accessibility')}
-              className={`p-1.5 sm:p-2 rounded-lg border transition-all shrink-0 ${
+              className={`p-1.5 rounded-lg border transition-all shrink-0 ${
                 accessibilityMode
                   ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-md shadow-amber-400/30'
                   : 'bg-slate-900/80 text-slate-300 border-slate-800 hover:border-amber-500/30'
@@ -245,7 +238,7 @@ export const Navbar: React.FC = () => {
             {/* Notifications Button */}
             <button
               onClick={() => setCurrentView('notifications')}
-              className="relative p-1.5 sm:p-2 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300 hover:text-amber-400 transition-all shrink-0"
+              className="relative p-1.5 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300 hover:text-amber-400 transition-all shrink-0"
               title={t('common.notifications')}
             >
               <Bell className="w-3.5 h-3.5" />
@@ -256,13 +249,95 @@ export const Navbar: React.FC = () => {
               )}
             </button>
 
+            {/* MOBILE HAMBURGER MENU BUTTON */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold hover:bg-amber-500/30 transition-all"
+              title="Toggle Mobile Menu"
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+
           </div>
 
         </div>
       </div>
+
+      {/* MOBILE SLIDE-OVER DRAWER MENU */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden border-t border-amber-500/20 bg-slate-950/95 backdrop-blur-2xl px-4 py-4 space-y-4 max-h-[85vh] overflow-y-auto animate-in slide-in-from-top-2">
+          
+          {/* Temple Switcher in Mobile Drawer */}
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Selected Temple Shrine</span>
+            <select
+              value={selectedTempleId}
+              onChange={(e) => {
+                setSelectedTempleId(e.target.value as TempleId);
+              }}
+              className="w-full bg-slate-900 border border-amber-500/40 text-amber-300 text-xs font-bold p-2.5 rounded-xl focus:outline-none"
+            >
+              {temples.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* User Role Switcher in Mobile Drawer */}
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">User Role Mode</span>
+            <select
+              value={userRole}
+              onChange={(e) => {
+                setUserRole(e.target.value as UserRole);
+              }}
+              className="w-full bg-slate-900 border border-slate-800 text-slate-200 text-xs font-medium p-2.5 rounded-xl focus:outline-none"
+            >
+              <option value="pilgrim">{t('common.pilgrim_mode')}</option>
+              <option value="authority">{t('common.authority_admin')}</option>
+              <option value="police">{t('common.police')}</option>
+              <option value="medical">{t('common.medical')}</option>
+              <option value="volunteer">{t('common.volunteer')}</option>
+            </select>
+          </div>
+
+          {/* All Views Grid in Mobile Drawer */}
+          <div className="space-y-1.5 pt-2 border-t border-slate-800">
+            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">Navigation Views</span>
+            <div className="grid grid-cols-2 gap-2">
+              {viewsList.map((v) => {
+                const Icon = v.icon;
+                const isActive = currentView === v.id;
+                return (
+                  <button
+                    key={v.id}
+                    onClick={() => {
+                      setCurrentView(v.id);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`px-3 py-2 text-xs font-semibold rounded-xl flex items-center gap-2 transition-all ${
+                      isActive
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold shadow-md'
+                        : 'bg-slate-900 text-slate-300 border border-slate-800/80 hover:text-white'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">{getNavLabel(v.id)}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+        </div>
+      )}
+
     </header>
   );
 };
+
 
 
 
